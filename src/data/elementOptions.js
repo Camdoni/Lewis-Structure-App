@@ -21,4 +21,8 @@ export const elementOptions = [
   { name: "calcium", symbol: "Ca" },
 ];
 
-export const bondOptions = ["single", "double", "triple"];
+export const bondOptions = [
+  { type: "single" },
+  { type: "double" },
+  { type: "triple" },
+];

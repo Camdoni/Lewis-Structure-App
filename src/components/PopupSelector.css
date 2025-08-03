@@ -1,0 +1,66 @@
+.popup-selector-div {
+  position: fixed;
+  display: flex;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  background: white;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-radius: 8px;
+  width: 20vw;
+  height: 40vh;
+  flex-direction: column;
+  overflow: scroll;
+  font-size: 1.5em;
+  border-radius: 12px;
+  padding-top: 2.5vh;
+  z-index: 20;
+}
+
+ul {
+  list-style-type: none;
+  margin-left: 0;
+  padding-left: 0;
+  text-align: left;
+}
+
+li {
+  text-align: left;
+  padding-top: 1vh;
+  padding-bottom: 1vh;
+  padding-left: 0.75vw;
+  border-radius: 10px;
+  margin-bottom: 1vh;
+  margin-top: 0;
+  cursor: pointer;
+}
+
+.element-li:hover {
+  transition: 0.30s;
+  background-color: lightgreen;
+}
+
+.bond-li:hover {
+  transition: 0.30s;
+  background-color: lightcoral;
+}
+
+.charge-li:hover {
+  transition: 0.30s;
+  background-color: lightskyblue;
+}
+
+.search-bar {
+  font-size: 1.15em;
+  padding: 0.75vh;
+  margin-bottom: 0;
+  padding-left: 0.75vw;
+  border-radius: 10px;
+  border: solid lightgray
+}
+
+.hidden {
+  display: none;
+}

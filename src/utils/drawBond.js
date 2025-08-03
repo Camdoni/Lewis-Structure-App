@@ -1,28 +1,26 @@
-// drawBond.js (Rough.js version)
-
-import rough from "roughjs/bundled/rough.esm.js";
-
 /**
- * Draws a bond with rough (sketchy) style on canvas.
- * 
- * @param {HTMLCanvasElement} canvas - The canvas element.
- * @param {{x: number, y: number}} from - Starting point.
- * @param {{x: number, y: number}} to - Ending point.
- * @param {Object} [options] - Optional styling options.
+ * Draws a bond (straight line) between two atoms on a canvas
+ *
+ * @param {CanvasRenderingContext2D} ctx - The canvas 2D drawing context
+ * @param {{x: number, y: number }} from - Starting point of the bond.
+ * @param {{x: number, y: number }} to - Ending point of the bond
+ * @param {Object} [options] - Optional
+ * @param {string} [options.strokeColor="#000"] - Bond color.
+ * @param {number} [options.strokeWidth=2] - Bond thickness.
  */
-export function drawBondRough(canvas, from, to, options = {}) {
-  const rc = rough.canvas(canvas);
 
-  const points = [
-    [from.x, from.y],
-    [to.x, to.y],
-  ];
+export function drawBond(ctx, from, to, options = {}) {
+  // destructure options
+  // strokeColor = color of line
+  // type can be "single", "double", or "triple"
 
-  const roughOptions = {
-    stroke: options.strokeColor || "#000",
-    strokeWidth: options.strokeWidth || 2,
-    // add any roughjs options you want here
-  };
+  const { strokeColor = "#000", strokeWidth = 4, type } = options;
 
-  rc.linearPath(points, roughOptions);
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = strokeWidth;
+
+  ctx.beginPath();
+  ctx.moveTo(from.x, from.y);
+  ctx.lineTo(to.x, to.y);
+  ctx.stroke();
 }
