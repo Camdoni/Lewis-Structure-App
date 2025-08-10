@@ -26,3 +26,10 @@ export const bondOptions = [
   { type: "double" },
   { type: "triple" },
 ];
+
+export const chargeOptions = [
+  { number: "one" },
+  { number: "two" },
+  { number: "three" },
+  { number: "four" },
+];

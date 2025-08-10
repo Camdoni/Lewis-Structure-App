@@ -1,60 +1,89 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { getSnappedBondPoint } from "./useSnapping.js";
 
-export default function useBondDrag(setBonds) {
-  const [dragging, setDragging] = useState(null); // { type, bondId, end? }
-  const [dragStartPos, setDragStartPos] = useState(null);
+export default function useBondDrag(bonds, setBonds, elements) {
+  const [dragging, setDragging] = useState(null);
+  const snappedToRef = useRef(null);
 
-  function startDrag(type, bondId, pos, end = null) {
-    setDragging({ type, bondId, end });
-    setDragStartPos(pos);
+  function startDrag(type, bondId, startPos, end = null) {
+    const bond = bonds.find((b) => b.id === bondId);
+    setDragging({
+      type,
+      bondId,
+      startPos,
+      end,
+      initialFrom: bond?.from,
+      initialTo: bond?.to,
+    });
+    snappedToRef.current = null; // reset snap lock
   }
 
-  function drag(pos) {
+  function drag(currentPos) {
     if (!dragging) return;
 
-    const dx = pos.x - dragStartPos.x;
-    const dy = pos.y - dragStartPos.y;
+    const { bondId, type, end: whichEnd } = dragging;
 
-    if (dragging.type === "bond") {
-      setBonds((prevBonds) =>
-        prevBonds.map((bond) =>
-          bond.id === dragging.bondId
-            ? {
-                ...bond,
-                from: { x: bond.from.x + dx, y: bond.from.y + dy },
-                to: { x: bond.to.x + dx, y: bond.to.y + dy },
-              }
-            : bond
-        )
-      );
-    } else if (dragging.type === "handle") {
-      setBonds((prevBonds) =>
-        prevBonds.map((bond) =>
-          bond.id === dragging.bondId
-            ? {
-                ...bond,
-                [dragging.end]: {
-                  x: bond[dragging.end].x + dx,
-                  y: bond[dragging.end].y + dy,
-                },
-              }
-            : bond
-        )
-      );
-    }
+    setBonds((prev) =>
+      prev.map((bond) => {
+        if (bond.id !== bondId) return bond;
 
-    setDragStartPos(pos);
+        if (type === "handle") {
+          if (snappedToRef.current) {
+            // Snap locked: always use locked point
+            return {
+              ...bond,
+              [whichEnd]: snappedToRef.current,
+            };
+          } else {
+            // Attempt to snap to elements or other bond handles
+            const snapped = getSnappedBondPoint(
+              currentPos,
+              elements,
+              prev,
+              bondId
+            );
+            if (snapped) {
+              snappedToRef.current = snapped; // lock snapping
+              return {
+                ...bond,
+                [whichEnd]: snapped,
+              };
+            } else {
+              // No snap: follow cursor
+              return {
+                ...bond,
+                [whichEnd]: currentPos,
+              };
+            }
+          }
+        }
+
+        if (type === "bond") {
+          const dx = currentPos.x - dragging.startPos.x;
+          const dy = currentPos.y - dragging.startPos.y;
+
+          return {
+            ...bond,
+            from: {
+              x: dragging.initialFrom.x + dx,
+              y: dragging.initialFrom.y + dy,
+            },
+            to: {
+              x: dragging.initialTo.x + dx,
+              y: dragging.initialTo.y + dy,
+            },
+          };
+        }
+
+        return bond;
+      })
+    );
   }
 
   function endDrag() {
     setDragging(null);
-    setDragStartPos(null);
+    snappedToRef.current = null;
   }
 
-  return {
-    dragging,
-    startDrag, // call with (type, bondId, pos, end?)
-    drag,
-    endDrag,
-  };
+  return { dragging, startDrag, drag, endDrag };
 }

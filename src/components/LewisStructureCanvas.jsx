@@ -10,6 +10,7 @@ import { isMouseNearPoint } from "../utils/hitBondTest.js";
 import { isMouseOverBondBox } from "../utils/isMouseOverBondBox.js";
 import { isMouseOverElementBox } from "../utils/isMouseOverElementBox.js";
 import useElementDrag from "../hooks/useElementDrag.js";
+import { drawBondingPoints } from "../utils/drawBondingPoints.js";
 
 function LewisStructureCanvas({
   elements,
@@ -27,11 +28,15 @@ function LewisStructureCanvas({
   });
 
   // initialize useBondDrag hook
-  const { dragging, startDrag, drag, endDrag } = useBondDrag(setBonds);
+  const { dragging, startDrag, drag, endDrag } = useBondDrag(
+    bonds,
+    setBonds,
+    elements
+  );
 
   //initialize useElementDrag hook
   const { draggingElementId, startElementDrag, elementDrag, endElementDrag } =
-    useElementDrag(setElements);
+    useElementDrag(elements, setElements, bonds, setBonds);
 
   const [hoveredBondId, setHoveredBondId] = useState(null);
   const [hoveredElementId, setHoveredElementId] = useState(null);
@@ -59,35 +64,39 @@ function LewisStructureCanvas({
     bonds.forEach((bond) => {
       drawBond(ctx, bond.from, bond.to, {
         strokeColor: dragging?.bondId === bond.id ? "gray" : "black",
+        type: bond.type || "single",
       });
 
       if (dragging?.bondId === bond.id || hoveredBondId === bond.id) {
         drawBondHandles(ctx, bond);
       }
+
+
     });
 
     elements.forEach((element) => {
       drawElement(ctx, element);
 
       if (hoveredElementId === element.id) {
-        ctx.strokeStyle = "gray";
-        ctx.lineWidth = 2;
+        // ctx.strokeStyle = "gray";
+        // ctx.lineWidth = 2;
 
-        const metrics = ctx.measureText(element.symbol);
-        const textWidth = metrics.width;
+        // const metrics = ctx.measureText(element.symbol);
+        // const textWidth = metrics.width;
 
-        const fontSize = 65;
-        const padding = 10;
+        // const fontSize = 65;
+        // const padding = 10;
 
-        const verticalOffset = fontSize * 0.55 - 5;
-        const rectHeight = fontSize + padding * 2 - 10;
+        // const verticalOffset = fontSize * 0.55 - 5;
+        // const rectHeight = fontSize + padding * 2 - 10;
 
-        ctx.strokeRect(
-          element.x - textWidth / 2 - padding,
-          element.y - verticalOffset - padding,
-          textWidth + padding * 2,
-          rectHeight
-        );
+        // ctx.strokeRect(
+        //   element.x - textWidth / 2 - padding,
+        //   element.y - verticalOffset - padding,
+        //   textWidth + padding * 2,
+        //   rectHeight
+        // );
+        drawBondingPoints(ctx, element);
       }
     });
   }, [bonds, hoveredBondId, hoveredElementId, elements, dimensions, dragging]);
@@ -138,6 +147,7 @@ function LewisStructureCanvas({
       const bond = getClickedBond(pos);
       if (bond) {
         startDrag("bond", bond.id, pos);
+        return;
       }
 
       const clickedElement = elements.find((el) =>
@@ -205,7 +215,18 @@ function LewisStructureCanvas({
       canvas.removeEventListener("mouseup", handleMouseUp);
       canvas.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, [bonds, dragging, startDrag, drag, endDrag]);
+  }, [
+    bonds,
+    elements,
+    dragging,
+    draggingElementId,
+    startDrag,
+    drag,
+    endDrag,
+    startElementDrag,
+    elementDrag,
+    endElementDrag,
+  ]);
 
   // Popup selector
   const handleSelect = (selectedItem) => {
@@ -246,8 +267,23 @@ function LewisStructureCanvas({
         setElements((prev) => [...prev, newElement]);
       }
     }
+
+    // if (activePopup === "charge") {
+    //   const foundCharge = chargeOptions.find(
+    //     (ch) => ch.number.toLowerCase() === selectedItem.toLowerCase()
+    //   );
+
+    //   if (foundCharge) {
+    //     const newCharge = {
+    //       id: Date.now(),
+    //       x: Math.random
+    //     }
+    //   }
+
+    // }
     console.log("Elements: ", elements);
     console.log("Bonds: ", bonds);
+    // console.log("Charges: ", charges);
 
     // remove popup from ui
     setActivePopup(null);
